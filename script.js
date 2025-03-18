@@ -33,3 +33,9 @@ const gameBoard = (function () {
 
   return { addPiece, getBoard };
 })();
+
+function createPlayer(playerName, playerNumber) {
+  const playerNumber = playerNumber;
+  const getPlayerNumber = () => playerNumber;
+  return { playerName, getPlayerNumber };
+}
