@@ -1,6 +1,9 @@
 :root {
   --background-color: rgb(199, 102, 91);
   --foreground-color: salmon;
+  --text-color: white;
+  --border-color: rgb(246, 246, 246);
+  --hover-color: rgba(255, 255, 255, 0.2);
 }
 
 * {
@@ -14,6 +17,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  color: var(--text-color);
 }
 
 .wrapper {
@@ -36,9 +40,16 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px white solid;
+  border: 1px var(--border-color) solid;
   border-radius: 20px;
   padding: 0 20px 20px;
+}
+
+.title h1 {
+  color: var(--text-color);
+  font-size: 2.5rem;
+  margin: 1rem 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 form {
@@ -46,18 +57,47 @@ form {
   grid-template: 1fr 1fr / 1fr 1fr;
   gap: 1rem;
   margin-top: 1rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+input[type="text"] {
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  width: 100%;
+  outline: none;
 }
 
 .start-reset {
   grid-column: 2;
   grid-row: 1/3;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border-radius: 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.start-reset:hover {
+  background-color: rgba(199, 102, 91, 0.8);
+}
+
+.start-reset:active {
+  transform: scale(0.98);
 }
 
 .game-container {
   height: 500px;
   width: 500px;
-  border: 1px white solid;
+  border: 1px var(--border-color) solid;
   border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
 }
 
 .game-board {
@@ -65,8 +105,24 @@ form {
   height: 100%;
   display: grid;
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  gap: 6px;
+  background-color: var(--border-color);
+  border-radius: 10px;
+  padding: 6px;
 }
 
 .square {
-  background-color: transparent;
+  background-color: var(--foreground-color);
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 4rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.square:hover {
+  background-color: var(--hover-color);
 }
