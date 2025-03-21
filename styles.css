@@ -44,6 +44,7 @@ body {
   border: 6px var(--border-color) solid;
   border-radius: 20px;
   padding: 0 20px 20px;
+  box-shadow: rgba(0, 0, 0, 0.15) 2.4px 2.4px 3.2px;
 }
 
 .title {
@@ -106,6 +107,7 @@ input[type="text"] {
   background-color: var(--border-color);
   border-radius: 10px;
   padding: 6px;
+  box-shadow: rgba(0, 0, 0, 0.15) 2.4px 2.4px 3.2px;
 }
 
 .square {
@@ -118,6 +120,7 @@ input[type="text"] {
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.2s;
+  box-shadow: rgba(0, 0, 0, 0.06) 0px 2px 4px 0px inset;
 }
 
 .square:hover {
