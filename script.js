@@ -165,3 +165,12 @@ const gameController = (function (
     printWinMessage,
   };
 })();
+
+const screenController = (function () {
+  const startResetButton = document.querySelector(".start-reset");
+  const dynamicText = document.querySelector("#dynamic-text");
+  const gameBoard = document.querySelector(".game-board");
+
+  const updateScreen = () => {};
+  const clickHandlerBoard = () => {};
+})();
