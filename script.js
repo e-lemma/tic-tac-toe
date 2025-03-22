@@ -2,29 +2,18 @@ const gameBoard = (function () {
   const boardSize = 3;
   const board = [];
 
-  (function createBoard() {
+  function createBoard() {
     for (let i = 0; i < boardSize; i++) {
       board[i] = [];
       for (let j = 0; j < boardSize; j++) {
         board[i].push(square());
       }
     }
-  })();
-
-  const coordMap = {
-    a1: [2, 0],
-    a2: [1, 0],
-    a3: [0, 0],
-    b1: [2, 1],
-    b2: [1, 1],
-    b3: [0, 1],
-    c1: [2, 2],
-    c2: [1, 2],
-    c3: [0, 2],
-  };
+  }
+  createBoard();
 
   const addMarkToBoard = (coordinates, player) => {
-    const [row, col] = coordMap[coordinates];
+    const [row, col] = coordinates;
 
     if (board[row][col].getValue() !== 0) {
       console.warn("occupied square picked. nothing happened");
@@ -34,7 +23,16 @@ const gameBoard = (function () {
     board[row][col].markSquare(player.getPlayerNumber());
   };
 
-  const getBoard = () => board.map((row) => row.map((cell) => cell.getValue()));
+  const getBoard = () => board;
+
+  const resetBoard = () => {
+    board.length = 0;
+    console.log(board);
+    createBoard();
+  };
+
+  const getBoardWithValues = () =>
+    board.map((row) => row.map((cell) => cell.getValue()));
 
   const printBoard = () => {
     const processedBoard = board.map((row) =>
@@ -43,12 +41,25 @@ const gameBoard = (function () {
     console.table(processedBoard);
   };
 
-  return { boardSize, addMarkToBoard, getBoard, printBoard };
+  return {
+    boardSize,
+    addMarkToBoard,
+    getBoard,
+    getBoardWithValues,
+    printBoard,
+    resetBoard,
+  };
 })();
 
-function createPlayer(playerName, playerNumber) {
+function createPlayer(initialName, playerNumber) {
+  let playerName = initialName;
   const getPlayerNumber = () => playerNumber;
-  return { playerName, getPlayerNumber };
+  const setPlayerName = (name) => {
+    playerName = name;
+  };
+  const getPlayerName = () => playerName;
+
+  return { getPlayerNumber, setPlayerName, getPlayerName };
 }
 
 function square() {
@@ -82,7 +93,7 @@ const gameController = (function (
 
   const checkForWinner = () => {
     const size = gameBoard.boardSize;
-    const board = gameBoard.getBoard();
+    const board = gameBoard.getBoardWithValues();
 
     // Check rows
     for (let row = 0; row < size; row++) {
@@ -140,10 +151,11 @@ const gameController = (function (
 
   const printTurn = () => {
     gameBoard.printBoard();
-    console.log(`${getActivePlayer().playerName}'s turn! ↓`);
+    console.log(`${getActivePlayer().getPlayerName()}'s turn! ↓`);
   };
 
-  const printWinMessage = () => console.log(`${activePlayer.playerName} Wins!`);
+  const printWinMessage = () =>
+    console.log(`${activePlayer.getPlayerName()} Wins!`);
 
   const playTurn = (coords) => {
     gameBoard.addMarkToBoard(coords, getActivePlayer());
@@ -163,14 +175,133 @@ const gameController = (function (
     printTurn,
     playTurn,
     printWinMessage,
+    checkForWinner,
+    players,
   };
 })();
 
 const screenController = (function () {
-  const startResetButton = document.querySelector(".start-reset");
-  const dynamicText = document.querySelector("#dynamic-text");
-  const gameBoard = document.querySelector(".game-board");
+  const titleText = "Tic-Tac-Toe";
+  const resetButtonText = "Reset Game";
+  const startButtonColor = "rgb(94, 188, 94)";
+  const startButtonText = "Start Game";
+  const resetButtonColor = "rgb(199, 102, 91)";
 
-  const updateScreen = () => {};
-  const clickHandlerBoard = () => {};
+  const dynamicTextDiv = document.querySelector("#dynamic-text");
+  const gameBoardDiv = document.querySelector(".game-board");
+
+  function renderSquares() {
+    gameBoardDiv.innerHTML = ""; // Clear old buttons
+
+    const board = gameBoard.getBoard();
+    board.forEach((row, rowIndex) => {
+      row.forEach((_square, columnIndex) => {
+        const squareButton = document.createElement("button");
+        squareButton.classList.add("square");
+        squareButton.dataset.row = rowIndex;
+        squareButton.dataset.column = columnIndex;
+        gameBoardDiv.appendChild(squareButton);
+
+        squareButton.addEventListener("click", () => {
+          const row = Number(squareButton.dataset.row);
+          const col = Number(squareButton.dataset.column);
+
+          const currentValue = gameBoard.getBoardWithValues()[row][col];
+          if (currentValue !== 0) return; // prevent double marking
+
+          const activePlayerNum = gameController
+            .getActivePlayer()
+            .getPlayerNumber();
+          squareButton.textContent = activePlayerNum === 1 ? "○" : "X";
+
+          gameController.playTurn([row, col]);
+
+          const winner = gameController.checkForWinner();
+          if (winner === activePlayerNum) {
+            displayWinMessage();
+          } else if (winner === "draw") {
+            displayDrawMessage();
+          } else {
+            displayTurn();
+          }
+        });
+      });
+    });
+  }
+
+  const squareButtons = document.querySelectorAll(".square");
+  const startResetButton = document.querySelector(".start-reset");
+
+  // setup form
+  const form = document.querySelector("form");
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const formData = new FormData(form);
+
+    gameController.players[0].setPlayerName(formData.get("playerOneName"));
+    gameController.players[1].setPlayerName(formData.get("playerTwoName"));
+
+    form.reset();
+
+    if (startResetButton.textContent === startButtonText) {
+      startResetButton.click();
+    }
+  });
+
+  const resetDynamicText = () => {
+    dynamicTextDiv.classList.remove("dynamicText");
+    dynamicTextDiv.classList.add("title");
+    dynamicTextDiv.textContent = titleText;
+  };
+
+  const updateDynamicText = (newText) => {
+    dynamicTextDiv.textContent = newText;
+  };
+
+  const displayTurn = () => {
+    updateDynamicText(
+      `${gameController.getActivePlayer().getPlayerName()}'s turn!`
+    );
+  };
+
+  const displayWinMessage = () =>
+    updateDynamicText(
+      `${gameController.getActivePlayer().getPlayerName()} Wins!`
+    );
+
+  const displayDrawMessage = () => updateDynamicText(`It's a draw!`);
+
+  (setupStartResetButton = () => {
+    const startResetButton = document.querySelector(".start-reset");
+
+    startResetButton.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      if (startResetButton.textContent == startButtonText) {
+        startResetButton.textContent = resetButtonText;
+        startResetButton.style.backgroundColor = resetButtonColor;
+        startGame();
+      } else {
+        startResetButton.textContent = startButtonText;
+        startResetButton.style.backgroundColor = startButtonColor;
+        resetGame();
+      }
+    });
+  })();
+
+  const startGame = () => {
+    gameBoardDiv.style.backgroundColor = "white";
+    renderSquares(); // render and bind fresh squares
+    displayTurn();
+  };
+
+  const resetGame = () => {
+    gameBoardDiv.style.backgroundColor = "salmon";
+    gameBoard.resetBoard(); // clear board state
+    gameBoardDiv.innerHTML = ""; // clear buttons from DOM
+    resetDynamicText();
+  };
+
+  return { updateDynamicText, resetDynamicText };
 })();
