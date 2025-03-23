@@ -3,7 +3,7 @@
   --foreground-color: salmon;
   --text-color: white;
   --border-color: rgb(246, 246, 246);
-  --hover-color: rgba(255, 255, 255, 0.2);
+  --hover-color: rgba(91, 188, 199, 0.25);
   --start-game-button-color: rgb(94, 188, 94);
 }
 
@@ -125,4 +125,5 @@ input[type="text"] {
 
 .square:hover {
   background-color: var(--hover-color);
+  transform: scale(0.98); /* Optional: subtle scale effect on hover */
 }

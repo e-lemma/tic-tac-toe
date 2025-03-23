@@ -6,7 +6,7 @@ const gameBoard = (function () {
     for (let i = 0; i < boardSize; i++) {
       board[i] = [];
       for (let j = 0; j < boardSize; j++) {
-        board[i].push(square());
+        board[i].push(createSquare());
       }
     }
   }
@@ -65,7 +65,7 @@ function createPlayer(initialName, playerNumber) {
   return { getPlayerNumber, setPlayerName, getPlayerName };
 }
 
-function square() {
+function createSquare() {
   let value = 0;
 
   const markSquare = (playerNumber) => {
@@ -228,7 +228,13 @@ const screenController = (function () {
           const moveSuccessful = gameController.playTurn([row, col]);
 
           if (moveSuccessful) {
-            squareButton.textContent = activePlayerNum === 1 ? "○" : "X";
+            if (activePlayerNum === 1) {
+              squareButton.innerHTML =
+                '<svg viewBox="0 0 24 24" width="60%" height="60%"><circle cx="12" cy="12" r="8" fill="none" stroke="white" stroke-width="3"/></svg>';
+            } else {
+              squareButton.innerHTML =
+                '<svg viewBox="0 0 24 24" width="60%" height="60%"><line x1="6" y1="6" x2="18" y2="18" stroke="#333" stroke-width="3"/><line x1="6" y1="18" x2="18" y2="6" stroke="#333" stroke-width="3"/></svg>';
+            }
           }
 
           if (gameController.isWinner()) {
@@ -255,15 +261,13 @@ const screenController = (function () {
       if (startResetButton.textContent == startButtonText) {
         const formData = new FormData(form);
 
-        if (formData.entries()) {
-          gameController
-            .getPlayers()[0]
-            .setPlayerName(formData.get("playerOneName"));
-          gameController
-            .getPlayers()[1]
-            .setPlayerName(formData.get("playerTwoName"));
-          form.reset();
-        }
+        gameController
+          .getPlayers()[0]
+          .setPlayerName(formData.get("playerOneName"));
+        gameController
+          .getPlayers()[1]
+          .setPlayerName(formData.get("playerTwoName"));
+        form.reset();
 
         startResetButton.textContent = resetButtonText;
         startResetButton.style.backgroundColor = resetButtonColor;
