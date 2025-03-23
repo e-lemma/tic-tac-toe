@@ -153,22 +153,25 @@ const gameController = (function (
       }
     }
     if (isDraw) {
+      console.log("draw!");
       return "draw";
     }
+    console.log("continue game");
     return;
   };
 
   const playTurn = (coords) => {
     gameBoard.addMarkToBoard(coords, getActivePlayer());
-    switchActivePlayer();
   };
 
   const isWinner = () => {
-    checkForWinner() === activePlayer.getPlayerNumber ? true : false;
+    console.log(checkForWinner());
+    console.log(activePlayer.getPlayerNumber());
+    return checkForWinner() === activePlayer.getPlayerNumber() ? true : false;
   };
 
   const isDraw = () => {
-    checkForWinner() === "draw" ? true : false;
+    return checkForWinner() === "draw" ? true : false;
   };
 
   return {
@@ -219,10 +222,12 @@ const screenController = (function () {
           gameController.playTurn([row, col]);
 
           if (gameController.isWinner()) {
+            console.warn("winner detected");
             displayWinMessage();
           } else if (gameController.isDraw()) {
             displayDrawMessage();
           } else {
+            gameController.switchActivePlayer();
             displayTurn();
           }
         });
@@ -299,6 +304,8 @@ const screenController = (function () {
     );
 
   const displayDrawMessage = () => updateDynamicText(`It's a draw!`);
+
+  const endGame = () => {};
 
   const startGame = () => {
     gameBoardDiv.style.backgroundColor = "white";
