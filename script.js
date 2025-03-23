@@ -27,7 +27,6 @@ const gameBoard = (function () {
 
   const resetBoard = () => {
     board.length = 0;
-    console.log(board);
     createBoard();
   };
 
@@ -55,7 +54,11 @@ function createPlayer(initialName, playerNumber) {
   let playerName = initialName;
   const getPlayerNumber = () => playerNumber;
   const setPlayerName = (name) => {
-    playerName = name;
+    if (!name) {
+      playerName = initialName;
+    } else {
+      playerName = name;
+    }
   };
   const getPlayerName = () => playerName;
 
@@ -90,6 +93,12 @@ const gameController = (function (
   const switchActivePlayer = () => {
     activePlayer = activePlayer === players[0] ? players[1] : players[0];
   };
+
+  const resetActivePlayer = () => {
+    activePlayer = players[0];
+  };
+
+  const getPlayers = () => players;
 
   const checkForWinner = () => {
     const size = gameBoard.boardSize;
@@ -149,34 +158,27 @@ const gameController = (function (
     return;
   };
 
-  const printTurn = () => {
-    gameBoard.printBoard();
-    console.log(`${getActivePlayer().getPlayerName()}'s turn! ↓`);
-  };
-
-  const printWinMessage = () =>
-    console.log(`${activePlayer.getPlayerName()} Wins!`);
-
   const playTurn = (coords) => {
     gameBoard.addMarkToBoard(coords, getActivePlayer());
-    if (checkForWinner() === activePlayer.getPlayerNumber()) {
-      gameBoard.printBoard();
-
-      printWinMessage();
-      return;
-    }
     switchActivePlayer();
-    printTurn();
+  };
+
+  const isWinner = () => {
+    checkForWinner() === activePlayer.getPlayerNumber ? true : false;
+  };
+
+  const isDraw = () => {
+    checkForWinner() === "draw" ? true : false;
   };
 
   return {
     getActivePlayer,
     switchActivePlayer,
-    printTurn,
+    resetActivePlayer,
+    getPlayers,
     playTurn,
-    printWinMessage,
-    checkForWinner,
-    players,
+    isWinner,
+    isDraw,
   };
 })();
 
@@ -207,7 +209,7 @@ const screenController = (function () {
           const col = Number(squareButton.dataset.column);
 
           const currentValue = gameBoard.getBoardWithValues()[row][col];
-          if (currentValue !== 0) return; // prevent double marking
+          if (currentValue !== 0) return; // Prevents double-marking a square
 
           const activePlayerNum = gameController
             .getActivePlayer()
@@ -216,10 +218,9 @@ const screenController = (function () {
 
           gameController.playTurn([row, col]);
 
-          const winner = gameController.checkForWinner();
-          if (winner === activePlayerNum) {
+          if (gameController.isWinner()) {
             displayWinMessage();
-          } else if (winner === "draw") {
+          } else if (gameController.isDraw()) {
             displayDrawMessage();
           } else {
             displayTurn();
@@ -229,25 +230,52 @@ const screenController = (function () {
     });
   }
 
-  const squareButtons = document.querySelectorAll(".square");
-  const startResetButton = document.querySelector(".start-reset");
+  const isValidNames = (formData) => {
+    if (formData.has("playerOneName") && formData.has("playerTwoName")) {
+      return true;
+    } else if (
+      !formData.has("playerOneName") &&
+      !formData.has("playerTwoName")
+    ) {
+      return true;
+    } else return false;
+  };
 
-  // setup form
-  const form = document.querySelector("form");
+  (function setupStartResetButton() {
+    const startResetButton = document.querySelector(".start-reset");
+    const form = document.querySelector("form");
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const formData = new FormData(form);
+    startResetButton.addEventListener("click", (event) => {
+      event.preventDefault();
 
-    gameController.players[0].setPlayerName(formData.get("playerOneName"));
-    gameController.players[1].setPlayerName(formData.get("playerTwoName"));
+      if (startResetButton.textContent == startButtonText) {
+        const formData = new FormData(form);
 
-    form.reset();
+        if (!isValidNames) {
+          alert("Please either enter both names, or leave blank!");
+          return;
+        }
 
-    if (startResetButton.textContent === startButtonText) {
-      startResetButton.click();
-    }
-  });
+        if (formData.entries()) {
+          gameController
+            .getPlayers()[0]
+            .setPlayerName(formData.get("playerOneName"));
+          gameController
+            .getPlayers()[1]
+            .setPlayerName(formData.get("playerTwoName"));
+          form.reset();
+        }
+
+        startResetButton.textContent = resetButtonText;
+        startResetButton.style.backgroundColor = resetButtonColor;
+        startGame();
+      } else {
+        startResetButton.textContent = startButtonText;
+        startResetButton.style.backgroundColor = startButtonColor;
+        resetGame();
+      }
+    });
+  })();
 
   const resetDynamicText = () => {
     dynamicTextDiv.classList.remove("dynamicText");
@@ -272,27 +300,9 @@ const screenController = (function () {
 
   const displayDrawMessage = () => updateDynamicText(`It's a draw!`);
 
-  (setupStartResetButton = () => {
-    const startResetButton = document.querySelector(".start-reset");
-
-    startResetButton.addEventListener("click", (event) => {
-      event.preventDefault();
-
-      if (startResetButton.textContent == startButtonText) {
-        startResetButton.textContent = resetButtonText;
-        startResetButton.style.backgroundColor = resetButtonColor;
-        startGame();
-      } else {
-        startResetButton.textContent = startButtonText;
-        startResetButton.style.backgroundColor = startButtonColor;
-        resetGame();
-      }
-    });
-  })();
-
   const startGame = () => {
     gameBoardDiv.style.backgroundColor = "white";
-    renderSquares(); // render and bind fresh squares
+    renderSquares(); // get fresh squares
     displayTurn();
   };
 
@@ -301,7 +311,6 @@ const screenController = (function () {
     gameBoard.resetBoard(); // clear board state
     gameBoardDiv.innerHTML = ""; // clear buttons from DOM
     resetDynamicText();
+    gameController.resetActivePlayer();
   };
-
-  return { updateDynamicText, resetDynamicText };
 })();
