@@ -54,10 +54,10 @@ function createPlayer(initialName, playerNumber) {
   let playerName = initialName;
   const getPlayerNumber = () => playerNumber;
   const setPlayerName = (name) => {
-    if (!name) {
+    if (!name || name.trim().length === 0) {
       playerName = initialName;
     } else {
-      playerName = name;
+      playerName = name.trim();
     }
   };
   const getPlayerName = () => playerName;
@@ -245,17 +245,6 @@ const screenController = (function () {
     });
   }
 
-  const isValidNames = (formData) => {
-    if (formData.has("playerOneName") && formData.has("playerTwoName")) {
-      return true;
-    } else if (
-      !formData.has("playerOneName") &&
-      !formData.has("playerTwoName")
-    ) {
-      return true;
-    } else return false;
-  };
-
   (function setupStartResetButton() {
     const startResetButton = document.querySelector(".start-reset");
     const form = document.querySelector("form");
@@ -265,11 +254,6 @@ const screenController = (function () {
 
       if (startResetButton.textContent == startButtonText) {
         const formData = new FormData(form);
-
-        if (!isValidNames) {
-          alert("Please either enter both names, or leave blank!");
-          return;
-        }
 
         if (formData.entries()) {
           gameController
