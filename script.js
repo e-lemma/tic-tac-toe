@@ -87,6 +87,11 @@ const gameController = (function (
   ];
 
   let activePlayer = players[0];
+  let activeGame = true;
+
+  const allowPlay = () => (activeGame = true);
+
+  const disablePlay = () => (activeGame = false);
 
   const getActivePlayer = () => activePlayer;
 
@@ -153,20 +158,20 @@ const gameController = (function (
       }
     }
     if (isDraw) {
-      console.log("draw!");
       return "draw";
     }
-    console.log("continue game");
     return;
   };
 
   const playTurn = (coords) => {
+    if (activeGame === false) {
+      return false;
+    }
     gameBoard.addMarkToBoard(coords, getActivePlayer());
+    return true;
   };
 
   const isWinner = () => {
-    console.log(checkForWinner());
-    console.log(activePlayer.getPlayerNumber());
     return checkForWinner() === activePlayer.getPlayerNumber() ? true : false;
   };
 
@@ -179,6 +184,8 @@ const gameController = (function (
     switchActivePlayer,
     resetActivePlayer,
     getPlayers,
+    allowPlay,
+    disablePlay,
     playTurn,
     isWinner,
     isDraw,
@@ -217,13 +224,16 @@ const screenController = (function () {
           const activePlayerNum = gameController
             .getActivePlayer()
             .getPlayerNumber();
-          squareButton.textContent = activePlayerNum === 1 ? "○" : "X";
 
-          gameController.playTurn([row, col]);
+          const moveSuccessful = gameController.playTurn([row, col]);
+
+          if (moveSuccessful) {
+            squareButton.textContent = activePlayerNum === 1 ? "○" : "X";
+          }
 
           if (gameController.isWinner()) {
-            console.warn("winner detected");
             displayWinMessage();
+            gameController.disablePlay();
           } else if (gameController.isDraw()) {
             displayDrawMessage();
           } else {
@@ -305,12 +315,11 @@ const screenController = (function () {
 
   const displayDrawMessage = () => updateDynamicText(`It's a draw!`);
 
-  const endGame = () => {};
-
   const startGame = () => {
     gameBoardDiv.style.backgroundColor = "white";
     renderSquares(); // get fresh squares
     displayTurn();
+    gameController.allowPlay();
   };
 
   const resetGame = () => {
